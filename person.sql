@@ -36,8 +36,8 @@ CREATE TABLE `person` (
   `p_address` text NOT NULL,
   `p_skill` text NOT NULL,
   `p_tel` varchar(30) NOT NULL,
-  `p_information` varchar(255) NOT NULL,
-  `p_image` varchar(255) NOT NULL,
+  `p_information` varchar(255) NOT NULL DEFAULT '',
+  `p_image` varchar(255) NOT NULL DEFAULT '',
   `p_user` varchar(20) NOT NULL,
   `p_pass` varchar(100) NOT NULL,
   `p_level` varchar(10) NOT NULL,
@@ -49,7 +49,9 @@ CREATE TABLE `person` (
 --
 
 INSERT INTO `person` (`p_id`, `p_prefix`, `p_name`, `p_surname`, `p_birthday`, `p_address`, `p_skill`, `p_tel`, `p_information`, `p_image`, `p_user`, `p_pass`, `p_level`, `d_id`) VALUES
-(29, 'นาย', 'พิธารวัฒน์', 'เกตุมณี', '2004-04-22', '42/13 กาญจนบุรี', 'Admin\r\n', '0611080011', '', '', 'user1', 'e10adc3949ba59abbe56e057f20f883e', 'a', 1);
+(29, 'นาย', 'พิธารวัฒน์', 'เกตุมณี', '2004-04-22', '42/13 กาญจนบุรี', 'Admin', '0611080011', '', '', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 'a', 1),
+(30, 'นางสาว', 'ใจดี', 'เรียนรู้', '1995-05-15', '123/4 นครปฐม', 'PHP, SQL', '0812345678', '', '', 'member1', '67373f73df06e8bd018a38ae11a566cf', 'u', 4),
+(31, 'นาย', 'สมชาย', 'สายลุย', '1990-10-10', '99/9 กรุงเทพฯ', 'Management', '0998887766', '', '', 'admin2', '0192023a7bbd73250516f069df18b500', 'a', 2);
 
 -- --------------------------------------------------------
 

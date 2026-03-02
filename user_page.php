@@ -1,93 +1,146 @@
 <?php
-// เริ่มใช้ session_start
-session_start();
 require("conn.php");
-if($_SESSION["p_level"] !="u"){ // ใส่ข้อมูลเข้ามา ไม่เท่ากับ !="u" ไม่ใช่ user ให้แสดงข้อความ echo <สำหรับผู้ใช้งานระบบ> / ในหน้า check.php 
 
-    echo"<center>สำหรับผู้ใช้งานระบบ <a href=login.php>กรุณาเข้าสู่ระบบ</center>";
+// Check user level
+if (!isset($_SESSION["p_level"]) || $_SESSION["p_level"] != "u") {
+    header("Location: login.php");
     exit();
 }
-if(!$_SESSION["p_id"]){ // เครื่องหมาย ! เป็นเงื่อนไข ถ้าไม่ได้ใส่ข้อมูล login จะถูก ส่งกลับไป login.php
-    header("location:login.php");
-    
-}else{   // ถ้าเข้ามาถูกต้องได้ จะทำการแสดงข้อมูล html ทั้งหมด
-                                        // ดึงข้อมูลใน ฟิลล์ และ $_SESSION ของ check.php มาใช้
-    $sqllogin="SELECT * FROM person WHERE p_id='".$_SESSION["p_id"]."'";
-    $result = mysqli_query($con,$sqllogin);
-    $row=mysqli_fetch_assoc($result); // ดึงข้อมูล $result
+
+$sqllogin = "SELECT p.*, r.d_name 
+            FROM person p 
+            LEFT JOIN `rank` r ON p.d_id = r.d_id 
+            WHERE p.p_id='" . $_SESSION["p_id"] . "'";
+$result = mysqli_query($con, $sqllogin);
+$row = mysqli_fetch_assoc($result);
 ?>
-
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" 
-    rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลส่วนตัว - NPRU Personnel</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" type="text/css" href="stylesBG.css">
-    <title>MEMBER!</title>
-  </head>
-  <body>
-  <div>
-    <?php
-    require ("navbar.php");
-    ?>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .profile-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #620dd2 0%, #a01eff 100%);
+            padding: 3rem 2rem;
+            color: white;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin: 0 auto 1.5rem;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        .info-value {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<?php require("navbar.php"); ?>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="profile-card card">
+                <div class="profile-header">
+                    <div class="profile-avatar overflow-hidden p-0">
+                        <?php if ($row["p_image"]): ?>
+                            <img src="image/<?php echo $row["p_image"]; ?>" alt="Avatar" class="w-100 h-100 object-fit-cover">
+                        <?php else: ?>
+                            <i class='bx bx-user'></i>
+                        <?php endif; ?>
+                    </div>
+                    <h2 class="fw-bold mb-1"><?php echo $row["p_prefix"].$row["p_name"]." ".$row["p_surname"]; ?></h2>
+                    <span class="badge bg-white text-dark rounded-pill px-3 py-2">
+                        <i class='bx bxs-briefcase me-1'></i> <?php echo $row["d_name"] ? $row["d_name"] : 'ยังไม่ระบุตำแหน่ง'; ?>
+                    </span>
+                </div>
+                
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h5 class="fw-bold mb-4 border-bottom pb-2">ข้อมูลทั่วไป</h5>
+                            
+                            <div class="info-label">วันเกิด</div>
+                            <div class="info-value"><?php echo date('d/m/Y', strtotime($row["p_birthday"])); ?></div>
+                            
+                            <div class="info-label">ที่อยู่ปัจจุบัน</div>
+                            <div class="info-value"><?php echo $row["p_address"]; ?></div>
+                            
+                            <div class="info-label">ทักษะ/ความสามารถ</div>
+                            <div class="info-value">
+                                <?php 
+                                    $skills = explode(',', $row["p_skill"]);
+                                    foreach($skills as $skill) {
+                                        echo '<span class="badge bg-light text-dark border me-1">'.trim($skill).'</span>';
+                                    }
+                                ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6 ps-md-4">
+                            <h5 class="fw-bold mb-4 border-bottom pb-2">ข้อมูลการติดต่อ</h5>
+                            
+                            <div class="info-label">เบอร์โทรศัพท์</div>
+                            <div class="info-value text-primary">
+                                <i class='bx bx-phone me-1'></i> <?php echo $row["p_tel"]; ?>
+                            </div>
+                            
+                            <div class="info-label">ชื่อผู้ใช้งาน</div>
+                            <div class="info-value"><?php echo $_SESSION["p_username"]; ?></div>
+                            
+                            <div class="mt-4 pt-2">
+                                <a href="editform.php?p_id=<?php echo $row["p_id"]; ?>" class="btn btn-warning w-100 py-2 rounded-pill shadow-sm">
+                                    <i class='bx bx-edit-alt'></i> แก้ไขข้อมูลส่วนตัว
+                                </a>
+                                <a href="logout.php" class="btn btn-outline-danger w-100 mt-2 py-2 rounded-pill">
+                                    <i class='bx bx-log-out'></i> ออกจากระบบ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  <div class="header">
-<div class="container">
-    <div class="container">
-<h2>ยินดีต้อนรับสมาชิก</h2>                                          
-<p><i class='bx bx-user'style='color:#620dd2'></i> สวัสดีคุณ <?php echo $row["p_prefix"];
-    echo $row["p_name"]; 
-    echo "&nbsp";
-    echo $row["p_surname"]; ?> <a href="logout.php" class ="btn byn danger btn-sm"> <!-- ทำการลิ้งค์ logout.php เพื่อ ล็อคเอาท์ออก -->
-        <i class='bx bx-log-out bx-tada' style='color:#620dd2' >ล็อคเอ้าท์ออก</i></a></p>
-    
-        <table class="table">
-    <thead class="table-dark">
-        <tr>
-            <th width="10%">คำนำหน้า</th>
-            <th>ชื่อ</th>
-            <th>นามสกุล</th>
-            <th width="10%">วันเกิด</th>
-            <th width="10%">ที่อยู่ปัจจุบัน</th>
-            <th width="5%">ทักษะ</th>
-            <th width="5%">เบอร์โทรศัพท์</th>
-            <th width=10%">แก้ไขข้อมูล</th>
-        </tr>
-    </thed>
-    <tbody>
-    <tr>
-            <td><?php echo $row["p_prefix"];?></td>
-            <td><?php echo $row["p_name"];?></td>
-            <td><?php echo $row["p_surname"];?></td>
-            <td><?php echo $row["p_birthday"];?></td>
-            <td><?php echo $row["p_address"];?></td>
-            <td><?php echo $row["p_skill"];?></td>
-            <td><?php echo $row["p_tel"];?></td>
-            <td><a href="editform.php?p_id=<?php echo $row["p_id"] ?>" class="btn btn-light">แก้ไข</a></td>
-    </tobdy>
-    </table>
-    
-                                                        
+</div>
 
-    </div>
-    
-
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
-  </body>
-  <?php } ?> 
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

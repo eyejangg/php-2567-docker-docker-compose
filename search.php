@@ -1,106 +1,108 @@
 <?php
 require ("conn.php");
-//กำหนดตัวแปร p_data
 
-$p_data=$_POST["p_data"];       //  LIKE = เปรียบเทียบข้อมูล นำ LIKE %p_data% หมายความว่า คนหาข้อมูลที่มีของ '%$p_data% ซึ่ง เรากำหนดตัวแปรไว้แล้ว
-                                // https://saixiii.com/database-sql-like-clause/
-$sql="SELECT * FROM person WHERE p_name LIKE '%$p_data%' OR p_surname LIKE '%$p_data%' ORDER BY p_name ASC";
-$result=mysqli_query($con,$sql);
-$count=mysqli_num_rows($result);
-$order=1; // นับแถวจากเลข 1
+if (!isset($_POST["p_data"])) {
+    header("location:index.php");
+    exit;
+}
+
+$p_data = mysqli_real_escape_string($con, $_POST["p_data"]);
+$sql = "SELECT p.*, r.d_name 
+        FROM person p 
+        LEFT JOIN rank r ON p.d_id = r.d_id 
+        WHERE p.p_name LIKE '%$p_data%' 
+        OR p.p_surname LIKE '%$p_data%' 
+        ORDER BY p.p_name ASC";
+$result = mysqli_query($con, $sql);
+$count = mysqli_num_rows($result);
+$order = 1;
 
 ?>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผลการค้นหา - ระบบบุคลากร</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .table thead {
+            background-color: #0d6efd;
+            color: white;
+        }
+    </style>
+</head>
+<body>
 
+<?php require ("navbar.php"); ?>
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="stylesBG.css">
-    <title>บุคลากร !!</title>
-  </head>
-  <body>
-  <div>
-<?php
-    require ("navbar.php");
-?>
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>ผลการค้นหาบุคลากร: "<span class="text-primary"><?php echo htmlspecialchars($p_data); ?></span>"</h2>
+        <a href="index.php" class="btn btn-outline-secondary">กลับหน้าหลัก</a>
     </div>
 
-<div class="header">
-<div class="container">
-
-    <h1 class="text-center mt-3">รายชื่อบุคลากรทั้งหมด</h1>
-    <!-- Required meta tags - <form action="search.php" class="form-gruop my- 3" method="POST">
-        <div class="row">
-            <div class="col-6">
-                <input type="text" placeholder="ค้นหาชื่อหรือนามสกุล" class="form-control"name="p_data" Required>
-             </div>
-                <div class="col-6">
-                    <input type="submit" value="ค้นหาข้อรายชื่อของบุคลากร" class="btn btn-info">
+    <?php if ($count > 0) { ?>
+        <div class="table-container table-responsive">
+            <p class="text-muted">พบข้อมูลทั้งหมด <?php echo $count; ?> รายการ</p>
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>ชื่อ-นามสกุล</th>
+                        <th>ตำแหน่ง/ฝ่าย</th>
+                        <th>วันเกิด</th>
+                        <th>เบอร์โทรศัพท์</th>
+                        <th>ที่อยู่</th>
+                        <th>ทักษะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($row = mysqli_fetch_assoc($result)) { ?>
+                    <tr>
+                        <td><?php echo $order++; ?></td>
+                        <td>
+                            <strong><?php echo $row["p_prefix"].$row["p_name"]; ?></strong> <?php echo $row["p_surname"]; ?>
+                        </td>
+                        <td><?php echo $row["d_name"] ? $row["d_name"] : '<span class="text-muted small">ไม่ระบุ</span>'; ?></td>
+                        <td><?php echo date('d/m/Y', strtotime($row["p_birthday"])); ?></td>
+                        <td><?php echo $row["p_tel"]; ?></td>
+                        <td class="small text-truncate" style="max-width: 150px;"><?php echo $row["p_address"]; ?></td>
+                        <td><span class="badge bg-info text-dark"><?php echo $row["p_skill"]; ?></span></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-    </form>
-    -->
-    </div>
-    </form>
-    <?php if ($count >0) {?>
-        <table class="table">
-  <thead class="table-dark">
-        <tr>
-        <th>ID</th>
-            <th>คำนำหน้า</th>
-            <th>ชื่อ</th>
-            <th>นามสกุล</th>
-            <th>วันเกิด</th>
-            <th>ที่อยู่ปัจจุบัน</th>
-            <th>ทักษะ</th>
-            <th>เบอร์โทรศัพท์</th>
-        </tr>
-    </thed>
-    <tbody>
-        <?php while($row=mysqli_fetch_assoc($result)){
-        // นำข้อมูล จากตัวแปร result ด้านบน มาเก็บใน $r=mysqli_fetch_assoc ($result) และ ในตัวแปร $r จะทำการใช้ while วนลูบ
-        ?>
-    <tr>
-                        
-            <td><?php echo $order++;?></td>
-            <td><?php echo $row["p_prefix"];?></td>
-            <td><?php echo $row["p_name"];?></td>
-            <td><?php echo $row["p_surname"];?></td>
-            <td><?php echo $row["p_birthday"];?></td>
-            <td><?php echo $row["p_address"];?></td>
-            <td><?php echo $row["p_skill"];?></td>
-            <td><?php echo $row["p_tel"];?></td>
-                </tr>
-            <?php } ?>
-         </tobdy>
-    </table>
-<?php }else{?>
-    <div class="alert alert-danger">
-        <b>ไม่พบข้อมูลบุคลากร</b>
-    </div>"
+    <?php } else { ?>
+        <div class="alert alert-warning py-4 text-center">
+            <h4 class="alert-heading">ไม่พบข้อมูล!</h4>
+            <p>ไม่พบรายชื่อบุคลากรที่ตรงกับคำค้นหา "<?php echo htmlspecialchars($p_data); ?>"</p>
+            <hr>
+            <a href="index.php" class="btn btn-primary">ลองค้นหาใหม่อีกครั้ง</a>
+        </div>
     <?php } ?>
-
-    <a href="index.php" class="btn btn-primary">Homepage </a>
-
 </div>
-</div>
-    <!-- Optional JavaScript; choose one of the two! -->
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
-
-
-  </body>
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
 
 
