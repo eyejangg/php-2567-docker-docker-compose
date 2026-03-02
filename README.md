@@ -13,7 +13,7 @@ docker-compose up -d
 ### � ช่องทางการเข้าใช้งาน:
 
 - **เว็บไซต์หลัก**: [http://localhost:8080](http://localhost:8080)
-- **phpMyAdmin**: [http://localhost:8081](http://localhost:8081)
+- **phpMyAdmin**: [http://localhost:8888](http://localhost:8888)
   - **Username**: `root`
   - **Password**: `root`
   - **Server**: `db`
